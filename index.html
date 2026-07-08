@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tra cứu điểm học phần</title>
+
+<style>
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f5f7;
+}
+
+.container{
+    width:420px;
+    margin:50px auto;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 15px rgba(0,0,0,.15);
+}
+
+h2{
+    text-align:center;
+    color:#0066cc;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    margin-top:15px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    background:#0066cc;
+    color:white;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#004d99;
+}
+
+table{
+    width:100%;
+    margin-top:20px;
+    border-collapse:collapse;
+}
+
+td{
+    border:1px solid #ddd;
+    padding:8px;
+}
+
+td:first-child{
+    font-weight:bold;
+    width:45%;
+}
+
+.error{
+    color:red;
+    margin-top:20px;
+    text-align:center;
+}
+
+.loading{
+    text-align:center;
+    margin-top:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>TRA CỨU ĐIỂM</h2>
+
+<input
+id="mssv"
+placeholder="Nhập MSSV">
+
+<button onclick="search()">TRA CỨU</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+//=========================
+// THAY URL CỦA BẠN
+//=========================
+
+const API_URL="https://script.google.com/macros/s/AKfycbw4zBnm5VaQagc6GJviEOu8h5I2gwj9-yGL8o2ofwRQq8zPI7H5KbvzM81ljYz1DMvY/exec";
+
+//=========================
+
+async function search(){
+
+let mssv=document.getElementById("mssv").value.trim();
+
+if(mssv==""){
+
+alert("Nhập MSSV");
+
+return;
+
+}
+
+document.getElementById("result").innerHTML="<div class='loading'>Đang tra cứu...</div>";
+
+try{
+
+const response=await fetch(API_URL+"?mssv="+encodeURIComponent(mssv));
+
+const data=await response.json();
+
+if(data.success){
+
+document.getElementById("result").innerHTML=`
+
+<table>
+
+<tr>
+<td>MSSV</td>
+<td>${data.mssv}</td>
+</tr>
+
+<tr>
+<td>Họ tên</td>
+<td>${data.hoten}</td>
+</tr>
+
+<tr>
+<td>Lớp</td>
+<td>${data.lop}</td>
+</tr>
+
+<tr>
+<td>Điểm quá trình</td>
+<td>${data.diemQT}</td>
+</tr>
+
+<tr>
+<td>Điểm giữa kỳ</td>
+<td>${data.diemGK}</td>
+</tr>
+
+<tr>
+<td>Điểm cuối kỳ</td>
+<td>${data.diemCK}</td>
+</tr>
+
+<tr>
+<td><b>Điểm học phần</b></td>
+<td><b>${data.diemHP}</b></td>
+</tr>
+
+</table>
+
+`;
+
+}else{
+
+document.getElementById("result").innerHTML=
+"<div class='error'>"+data.error+"</div>";
+
+}
+
+}catch(e){
+
+document.getElementById("result").innerHTML=
+"<div class='error'>Không kết nối được máy chủ.</div>";
+
+}
+
+}
+
+document.getElementById("mssv").addEventListener("keypress",function(e){
+
+if(e.key==="Enter"){
+
+search();
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
