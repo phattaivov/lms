@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tra cứu điểm học phần</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f6f9}
+.box{max-width:650px;margin:30px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px #ccc}
+h2{text-align:center;color:#0b66c3}
+label{display:block;margin-top:10px;font-weight:bold}
+select,input,button{width:100%;padding:10px;margin-top:5px}
+button{background:#0b66c3;color:#fff;border:0;cursor:pointer}
+table{width:100%;margin-top:20px;border-collapse:collapse}
+td{border:1px solid #ddd;padding:8px}
+td:first-child{font-weight:bold;width:45%}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>TRA CỨU ĐIỂM HỌC PHẦN</h2>
+
+<label>Học phần</label>
+<select id="mon" onchange="loadClass()">
+<option value="">-- Chọn học phần --</option>
+<option value="QD">Quay và Dựng video</option>
+<option value="KTA">Kỹ thuật ảnh</option>
+<option value="KiB">Kịch bản</option>
+<option value="PTh">Phát thanh</option>
+</select>
+
+<label>Lớp</label>
+<select id="lop"></select>
+
+<label>Nhập MSSV</label>
+<input id="mssv" placeholder="Nhập MSSV">
+
+<button onclick="search()">TRA CỨU</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+const API="https://script.google.com/macros/s/AKfycbwibmB-Kz81a0Xx8_myONMqKw4kO1MNByu1l8_BgdDcV1HtQpCJRYUyAig2Nyp_KebKOQ/exec";
+
+const ds={
+QD:["QD_A01E","QD_A02E","QD_A03E","QD_A04E","QD_A05E"],
+KTA:["KTA_A01E","KTA_A02E","KTA_A03E","KTA_A04E"],
+KiB:["KiB_B01","KiB_B02","KiB_B03"],
+PTh:["PTh_A01","PTh_A02","PTh_A03"]
+};
+
+function loadClass(){
+ const m=document.getElementById("mon").value;
+ const s=document.getElementById("lop");
+ s.innerHTML="";
+ if(!ds[m]) return;
+ ds[m].forEach(v=>{
+   let o=document.createElement("option");
+   o.value=v;o.text=v;s.add(o);
+ });
+}
+
+async function search(){
+ const mon=document.getElementById("mon").value;
+ const lop=document.getElementById("lop").value;
+ const mssv=document.getElementById("mssv").value.trim();
+ if(!mon){alert("Chọn học phần");return;}
+ if(!lop){alert("Chọn lớp");return;}
+ if(!mssv){alert("Nhập MSSV");return;}
+ const sheet=lop;
+ document.getElementById("result").innerHTML="Đang tra cứu...";
+ try{
+   const r=await fetch(API+"?sheet="+encodeURIComponent(sheet)+"&mssv="+encodeURIComponent(mssv));
+   const d=await r.json();
+   if(!d.success){document.getElementById("result").innerHTML="<b>"+d.error+"</b>";return;}
+   document.getElementById("result").innerHTML=`
+<table>
+<tr><td>MSSV</td><td>${d.mssv}</td></tr>
+<tr><td>Họ tên</td><td>${d.hoten}</td></tr>
+<tr><td>Lớp</td><td>${d.lop}</td></tr>
+<tr><td>Số buổi vắng</td><td>${d.vang}</td></tr>
+<tr><td>Điểm quá trình</td><td>${Number(d.diemQT).toFixed(2)}</td></tr>
+<tr><td>Điểm giữa kỳ</td><td>${Number(d.diemGK).toFixed(2)}</td></tr>
+<tr><td>Điểm cuối kỳ</td><td>${Number(d.diemCK).toFixed(2)}</td></tr>
+<tr><td><b>Điểm học phần</b></td><td><b>${Number(d.diemHP).toFixed(2)}</b></td></tr>
+</table>`;
+ }catch(e){
+   document.getElementById("result").innerHTML="Không kết nối được máy chủ.";
+}
+
+}//============================
+// Nhấn Enter để tra cứu
+//============================
+document.getElementById("mssv").addEventListener("keydown", function(event){
+
+    if(event.key === "Enter"){
+
+        event.preventDefault();
+
+        search();
+
+    }
+
+});
+
+</script>
+</body>
+</html>
